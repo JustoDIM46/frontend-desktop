@@ -1,0 +1,35 @@
+plugins {
+    id 'java-library'
+    id 'java'
+    id 'application'
+    id 'eclipse'
+}
+
+group = 'es.mde'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	sourceCompatibility = '17'
+}
+
+repositories {
+    jcenter()
+
+    maven { url 'https://jitpack.io' }
+}
+
+application {
+    mainClassName = 'pegaso.desktop.App'
+}
+    
+dependencies {
+	implementation 'com.github.ACING-Frontend-Desktop:datos-deportivos:v1.0.0'
+    implementation 'com.github.lanyuestudio:lanyuCommon:1.0.3'
+    implementation 'com.github.lanyuestudio:lanyu-ui:1.0.0'
+
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.3'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.12.3'
+
+    // Use JUnit test framework
+    testImplementation 'junit:junit:4.12'
+}
