@@ -4,6 +4,7 @@
 package pegaso.desktop;
 
 import org.junit.Test;
+import es.mde.pegasodesktop.App;
 import static org.junit.Assert.*;
 
 public class AppTest {

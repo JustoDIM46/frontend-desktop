@@ -1,4 +1,4 @@
-package pegaso.desktop;
+package es.mde.pegasodesktop;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -10,7 +10,8 @@ import es.lanyu.comun.evento.Partido;
 
 public abstract class IncidenteDAO<T> extends PegasoAbstractDAO<T> {
   
-	  Field fieldDescripcion = ReflectUtils.getCampo(Incidente.class, "descripcion", true);
-	  Field fieldNombre = ReflectUtils.getCampo(Incidente.class, "nombre", true);
+	  public IncidenteDAO(Class<T> tipo) {
+	  super(tipo);
+	  }
 
 }

@@ -1,4 +1,4 @@
-package pegaso.desktop;
+package es.mde.pegasodesktop;
 
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -56,7 +56,7 @@ public class IncidenteCombateForm extends JPanel {
 
   public IncidenteCombateForm(IncidenteCombate incidenteCombate, boolean editable) {
       Table tabla = new Table();
-      tabla.debug();
+      //tabla.debug();
       txtNombre = new JTextField();
       txtDescripcion = new JTextField();
       txtBajas = new JTextField();
@@ -66,14 +66,14 @@ public class IncidenteCombateForm extends JPanel {
 
       cargarIncidente(incidenteCombate);
       add(tabla);
-      tabla.addCell(new JLabel("ID: " + incidenteCombate.getId()));
-      tabla.row();
+      tabla.addCell(new JLabel("ID    "));
       tabla.addCell(new JLabel("Nombre: " ));
       tabla.addCell(new JLabel("Descripcion: "));
       tabla.addCell(new JLabel("Bajas: "));
       tabla.row();
+      tabla.addCell(""+incidenteCombate.getId()).width(20);
       tabla.addCell(getTxtNombre()).width(300);
-      tabla.addCell(getTxtDescripcion()).width(300);
+      tabla.addCell(getTxtDescripcion()).width(700);
       tabla.addCell(getTxtBajas()).width(30);
       
       getTxtNombre().addActionListener(new ActionListener() {
@@ -104,8 +104,8 @@ public class IncidenteCombateForm extends JPanel {
       getTxtDescripcion().addCaretListener(e -> cambiaIncidenteCombate());
       getTxtBajas().addCaretListener(e -> cambiaIncidenteCombate());
 
-//      Font fuente = new Font(Font.SERIF, Font.PLAIN, 30);
-//      Arrays.asList(tabla.getComponents()).forEach(c -> c.setFont(fuente));
+      Font fuente = new Font(Font.SERIF, Font.PLAIN, 20);
+      Arrays.asList(tabla.getComponents()).forEach(c -> c.setFont(fuente));
   }
 
   public void cargarIncidente(IncidenteCombate incidenteCombate) {
@@ -123,8 +123,6 @@ public class IncidenteCombateForm extends JPanel {
       this.getIncidenteCombate().setDescripcion(getTxtDescripcion().getText());
       String bajas = this.getTxtBajas().getText().isEmpty() ? "0" : getTxtBajas().getText();
       this.getIncidenteCombate().setBajas(Integer.parseInt(bajas));
-         // getTxtBajas().getText() != "" ?
-          //Integer.parseInt(getTxtBajas().getText()) : 0);
       PropertyChangeEvent evento = new PropertyChangeEvent(this, nombrePropiedad, null, this.getIncidenteCombate());
       Arrays.asList(getPropertyChangeListeners(nombrePropiedad)).forEach(l -> l.propertyChange(evento));
   }

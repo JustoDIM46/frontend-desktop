@@ -1,4 +1,4 @@
-package pegaso.desktop;
+package es.mde.pegasodesktop;
 
 import java.util.ArrayList;
 
