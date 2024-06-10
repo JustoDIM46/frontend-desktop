@@ -180,6 +180,81 @@ public class PegasoAbstractDAO<T> {
 	    }
 	}
 
+	   public void postEntidad(T entidad, String path) {
+	        HttpURLConnection con = null;
+	        try {
+	            // Serializar el objeto a JSON utilizando Jackson
+	            ObjectMapper objectMapper = new ObjectMapper()
+	                .enable(SerializationFeature.INDENT_OUTPUT)
+	                .enable(Feature.ALLOW_UNQUOTED_FIELD_NAMES)
+	                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+	                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+	            
+	            String json = objectMapper.writeValueAsString(entidad);
+
+	            // Crear conexión HTTP
+	            URL url = new URL(getApiUrl() + path);
+	            System.err.println(getApiUrl() + path);
+	            System.err.println(json);
+	            con = (HttpURLConnection) url.openConnection();
+	            con.setRequestMethod("POST");
+	            //con.setRequestProperty("X-HTTP-Method-Override", "PATCH");
+	            con.setDoOutput(true);
+	            con.setRequestProperty("Content-Type", "application/json; charset=utf-8");
+
+	            // Enviar JSON como cuerpo de la solicitud PATCH
+	            try (OutputStream os = con.getOutputStream()) {
+	                byte[] input = json.getBytes(StandardCharsets.UTF_8);
+	                os.write(input, 0, input.length);
+	            }
+
+	            // Leer respuesta
+	            int status = con.getResponseCode();  // Obtener el código de respuesta
+	            if (status == HttpURLConnection.HTTP_OK || status == HttpURLConnection.HTTP_NO_CONTENT
+	                || status == HttpURLConnection.HTTP_CREATED) {
+	                try (BufferedReader br = new BufferedReader(
+	                        new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8))) {
+	                    StringBuilder response = new StringBuilder();
+	                    String responseLine;
+	                    while ((responseLine = br.readLine()) != null) {
+	                        response.append(responseLine.trim());
+	                    }
+	                       String rawJson = response.toString();
+	                        Object json2 = objectMapper.readValue(rawJson, Object.class);
+	                        
+	                        // Volver a escribir el JSON de manera formateada
+	                        String formattedJson = objectMapper.writeValueAsString(json2);
+	                    System.out.println("Respuesta del API: " + formattedJson);
+	                }
+	            } else {
+	                System.out.println("POST request fallo con status: " + status);
+	                try (BufferedReader br = new BufferedReader(
+	                        new InputStreamReader(con.getErrorStream(), StandardCharsets.UTF_8))) {
+	                    StringBuilder errorResponse = new StringBuilder();
+	                    String responseLine;
+	                    while ((responseLine = br.readLine()) != null) {
+	                        errorResponse.append(responseLine.trim());
+	                    }
+	                    String rawJson = errorResponse.toString();
+	                    Object json2 = objectMapper.readValue(rawJson, Object.class);
+	                    
+	                    // Volver a escribir el JSON de manera formateada
+	                    String formattedJson = objectMapper.writeValueAsString(json2);
+	                    
+	                    // Imprimir el JSON formateado
+	                    //System.out.println(formattedJson);
+	                    System.out.println("Error response del servidor: " + formattedJson);
+	                }
+	            }
+
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	        } finally {
+	            if (con != null) {
+	                con.disconnect();
+	            }
+	        }
+	    }
 	  public void completarMapeo(T entidad, JsonNode nodo, Long id) {
 	    //super.completarMapeo(entidad, nodo, id);
 	    try {

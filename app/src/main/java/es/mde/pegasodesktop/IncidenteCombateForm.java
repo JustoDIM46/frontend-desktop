@@ -50,6 +50,10 @@ public class IncidenteCombateForm extends JPanel {
     this.txtBajas = txtBajas;
   }
 
+  public IncidenteCombateForm() {
+    this(new IncidenteCombate(),true);   
+  }
+  
   public IncidenteCombateForm(IncidenteCombate incidenteCombate) {
       this(incidenteCombate, false);
   }

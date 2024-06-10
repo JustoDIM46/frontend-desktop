@@ -42,6 +42,10 @@ public class IncidenteCombateDAO extends PegasoAbstractDAO<IncidenteCombate> {
     super.patchEntidad(entidad, "incidentescombate/" + entidad.getId());
   }
   
+  public void postIncidenteCombate(IncidenteCombate entidad) {
+    super.postEntidad(entidad, "incidentescombate");
+  }
+  
   public List<IncidenteCombate> getIncidentesCombateCometidoId(Long id) {
     Map<String, String> parametros = new HashMap<>();
     parametros.put("size", "300");

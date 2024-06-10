@@ -59,6 +59,10 @@ public class IncidenteLogisticoForm extends JPanel {
   public void setTxtCantidad(JTextField txtCantidad) {
     this.txtCantidad = txtCantidad;
   }
+  
+  public IncidenteLogisticoForm() {
+    this(new IncidenteLogistico(),true);   
+  }
 
   public IncidenteLogisticoForm(IncidenteLogistico incidentelogistico) {
       this(incidentelogistico, false);

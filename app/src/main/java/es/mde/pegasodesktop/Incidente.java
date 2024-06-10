@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  *
  */
 
-public class Incidente {
+public class Incidente implements Comparable<Incidente> {
  
   @JsonIgnore
   private Long id;
@@ -60,7 +60,9 @@ public class Incidente {
     this.nombre = nombre;
     this.descripcion = descripcion;
   }
-  
-  
 
+  @Override
+  public int compareTo(Incidente o) {
+    return (int) Long.compare(o.getId(),this.getId());
+  }
 }

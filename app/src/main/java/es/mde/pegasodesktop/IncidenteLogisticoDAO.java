@@ -50,5 +50,8 @@ public class IncidenteLogisticoDAO extends PegasoAbstractDAO<IncidenteLogistico>
   public void patchIncidenteLogistico(IncidenteLogistico entidad) {
     super.patchEntidad(entidad, "incidenteslogistico/" + entidad.getId());
 }
+  public void postIncidenteLogistico(IncidenteLogistico entidad) {
+    super.postEntidad(entidad, "incidenteslogistico");
+  }
 
 }

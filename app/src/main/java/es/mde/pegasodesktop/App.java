@@ -1,6 +1,7 @@
 package es.mde.pegasodesktop;
 
 import java.awt.Color;
+
 import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,6 +19,7 @@ import javax.swing.Action;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -26,6 +28,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 import com.esotericsoftware.tablelayout.swing.Table;
@@ -46,8 +50,8 @@ public class App {
   
   public final static Propiedades PROPIEDADES;
   public final static JFrame frame;
-  private static List<Incidente> incidentesTodos;
-  private static List<Cometido> cometidosTodos;
+  public static List<Incidente> incidentesTodos;
+  public static List<Cometido> cometidosTodos;
   private static ObjectMapper mapper;
   private static int ancho;
   private static int alto;
@@ -61,6 +65,7 @@ public class App {
         .enable(Feature.ALLOW_UNQUOTED_FIELD_NAMES)
         .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
         .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+    incidentesTodos = new ArrayList<>();
   }
 
   private static void guardarConfiguracion(JFrame frame) {
@@ -90,7 +95,8 @@ public class App {
       int ancho = PROPIEDADES.leerPropiedadInt("ancho");
       int alto = PROPIEDADES.leerPropiedadInt("alto");
        
-      frame.setLocationRelativeTo(null);
+      frame.setLocation(0, 0);
+//      frame.setLocationRelativeTo(null);
       frame.addWindowListener(new WindowAdapter() {
         @Override
         public void windowClosing(WindowEvent e) {
@@ -110,7 +116,8 @@ public class App {
       JMenuItem table2Item = new JMenuItem("Tabla de Cometidos");
 
       table1Item.addActionListener(e -> mostrarTablaIncidentes());
-      table2Item.addActionListener(e -> mostrarTablaIncidentes());
+      table2Item.addActionListener(e -> mostrarTablaCometidos());
+      table3Item.addActionListener(e -> System.exit(0));
 
       menu.add(table1Item);
       menu.add(table2Item);
@@ -119,47 +126,10 @@ public class App {
       menuBar.add(menu);
       frame.setJMenuBar(menuBar);
       
-      //frame.getContentPane().add(tabla);
-      
       //Cargamos incidentes
-      List<IncidenteCombate> incidentesCombate = 
-          new IncidenteCombateDAO().getIncidentesCombate();
-      List<IncidenteLogistico> incidentesLogistico = 
-          new IncidenteLogisticoDAO().getIncidenteLogisticos();
-    
-      incidentesTodos = new ArrayList<>();
-      incidentesTodos.addAll(incidentesLogistico);
-      incidentesTodos.addAll(incidentesCombate);
-      incidentesTodos.sort((u,v) -> (int) Long.compare(u.getId(),v.getId()));
-      incidentesTodos.stream()
-      .map(p -> {
-              String json = "N/D";
-              try {
-                  json = mapper.writeValueAsString(p);
-              } catch (JsonProcessingException e) {
-                  e.printStackTrace();
-              }
-              return json;
-          })
-      .forEach(System.out::println);
-      
+      cargarIncidencias();
       //Cargamos cometidos
-      cometidosTodos = new CometidoDAO().getCometidosConIncidentes();
-      cometidosTodos.forEach(c -> {
-        c.getIncidentes().forEach(System.out::println);
-      });    
-      
-      cometidosTodos.stream()
-      .map(p -> {
-              String json = "N/D";
-              try {
-                  json = mapper.writeValueAsString(p);
-              } catch (JsonProcessingException e) {
-                  e.printStackTrace();
-              }
-              return json;
-          })
-      .forEach(System.err::println);
+      cargarCometidos();
           
       //tabla.debug();
 
@@ -170,12 +140,15 @@ public class App {
     
     public static void mostrarTablaIncidentes() {
       
+      frame.getContentPane().removeAll();
+      frame.getContentPane().revalidate();
+      frame.getContentPane().repaint();
       Table tabla = new Table();
       JPanel panelFormulario = new JPanel();
       JPanel panelBotonesFormulario = new JPanel();
       JPanel panelBotonesAnadir = new JPanel();
       
-      tabla.addCell(new JLabel("Pulse para anadir incidente"));
+      tabla.addCell(new JLabel("Pulse para anadir nuevo incidente"));
       tabla.row();
       tabla.row();
 //      panelBotonesAnadir.add(new JLabel("Pulse para anadir incidente"));
@@ -213,8 +186,7 @@ public class App {
 
       panelBotonesAnadir.add(botonAnadirCombate);
       panelBotonesAnadir.add(botonAnadirLogistico);
-      
-      
+           
       tabla.addCell(panelBotonesAnadir);
       tabla.row();
       panelFormulario.add(new JLabel("Seleccione un incidente haciendo doble click sobre él para editarlo"));
@@ -247,7 +219,6 @@ public class App {
             SimpleJTable<Incidente> tabla = (SimpleJTable<Incidente>) e.getSource();
             int opcionIncidenteCombate;
             int opcionIncidenteLogistico;
-            //System.out.println("Borrar " + incidente);
             
             if ( tabla.getSeleccionado().getClass() == IncidenteCombate.class ) {
               IncidenteCombate incidente = (IncidenteCombate) tabla.getSeleccionado();
@@ -299,7 +270,7 @@ public class App {
       centerRenderer.setHorizontalAlignment(JLabel.RIGHT);
       
       TableColumn columnaId = tablaIncidentes.getColumn("Id");
-      columnaId.setMaxWidth(30);
+      columnaId.setMaxWidth(50);
       columnaId.setCellRenderer(centerRenderer);
       
       TableColumn columnaTipo = tablaIncidentes.getColumn("Tipo");
@@ -307,15 +278,15 @@ public class App {
       columnaTipo.setCellRenderer(leftRenderer);
       
       TableColumn columnaNombre = tablaIncidentes.getColumn("Nombre");
-      columnaNombre.setMaxWidth(250);
+      columnaNombre.setMaxWidth(350);
       columnaNombre.setCellRenderer(leftRenderer);
       
       TableColumn columnaDescripcion = tablaIncidentes.getColumn("Descripcion");
-      columnaDescripcion.setMaxWidth(800);
+      columnaDescripcion.setMaxWidth(450);
       columnaDescripcion.setCellRenderer(leftRenderer);
       
       TableColumn columnaBajas = tablaIncidentes.getColumn("Bajas");
-      columnaBajas.setMaxWidth(100);
+      columnaBajas.setMaxWidth(150);
       columnaBajas.setCellRenderer(leftRenderer);
       
       TableColumn columnaMaterial = tablaIncidentes.getColumn("Material");
@@ -323,11 +294,11 @@ public class App {
       columnaMaterial.setCellRenderer(leftRenderer);
       
       TableColumn columnaCantidad = tablaIncidentes.getColumn("Cantidad");
-      columnaCantidad.setMaxWidth(100);
+      columnaCantidad.setMaxWidth(150);
       columnaCantidad.setCellRenderer(leftRenderer);
       
       TableColumn columnaBorrar = tablaIncidentes.getColumn("Borrar");
-      columnaBorrar.setMaxWidth(50);
+      columnaBorrar.setMaxWidth(100);
       //columnaBorrar.setCellRenderer(leftRenderer);
       
       tablaIncidentes.addMouseListener(
@@ -433,31 +404,46 @@ public class App {
        }
     });
       
-//      DefaultTableCellRenderer dtcr = new DefaultTableCellRenderer();
-//      dtcr.setHorizontalAlignment(JLabel.LEFT);
-//      columnaNombre.setCellRenderer(dtcr);
-      
-        //tablaIncidentes.setAnchosPreferidos(300, 800);
+      botonAnadirCombate.addActionListener(l -> {
+        IncidenteCombateForm incidenteCombateForm = new IncidenteCombateForm();
+        int opcion = JOptionPane.showConfirmDialog(frame, incidenteCombateForm, "Nuevo incidente de combate",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        if (opcion == JOptionPane.OK_OPTION) {
+          IncidenteCombate incidenteCombate = incidenteCombateForm.getIncidenteCombate();
+            System.out.println("Creado " + incidenteCombate.getNombre());
+            try {
+              new IncidenteCombateDAO().postIncidenteCombate(incidenteCombate);
+              System.out.println("El nombre actual del incidente es: \n" +
+              mapper.writeValueAsString((IncidenteCombate) incidenteCombate));
+              cargarIncidencias();
+              tablaIncidentes.revalidate();
+              tablaIncidentes.repaint();
+            } catch (JsonProcessingException e1) {
+              e1.printStackTrace();
+            }
+        }
+    });
 
-//      int anchoNombre = 200;
-//      tablaIncidentes.setAnchosPreferidos(anchoNombre, 600);
-//      TableColumn columnaTipo = tablaIncidentes.getColumn("Tipo");
-//      columnaTipo.setMaxWidth(30);
-//      TableColumn columnaNombre = tablaIncidentes.getColumn("Nombre");
-//      columnaNombre.setMaxWidth(anchoNombre);
-//      TableColumn columnaDescripcion = tablaIncidentes.getColumn("Descripcion");
-//      columnaDescripcion.setMaxWidth(300);
-//      DefaultTableCellRenderer dtcr = new DefaultTableCellRenderer();
-//      dtcr.setHorizontalAlignment(JLabel.LEFT);
-//      columnaNombre.setCellRenderer(dtcr);
-
-//      tablaIncidentes.getColumnModel().
-//      getColumn(3).
-//      setCellRenderer(
-//          new CondicionalCustomRenderer<Incidente>
-//      (p -> p.toString(), false, Color.decode("#b9ea96"), 
-//          null, null, null));
-
+      botonAnadirLogistico.addActionListener(l -> {
+        IncidenteLogisticoForm incidenteLogisticoForm = new IncidenteLogisticoForm();
+        int opcion = JOptionPane.showConfirmDialog(frame, incidenteLogisticoForm, "Nuevo incidente logistico",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        if (opcion == JOptionPane.OK_OPTION) {
+          IncidenteLogistico incidenteLogistico = incidenteLogisticoForm.getIncidenteLogistico();
+          System.out.println("Creado " + incidenteLogistico.getNombre());
+          try {
+            new IncidenteLogisticoDAO().postIncidenteLogistico(incidenteLogistico);
+            System.out.println("El nombre actual del incidente es: \n" +
+            mapper.writeValueAsString((IncidenteLogistico) incidenteLogistico));
+            cargarIncidencias();
+            tablaIncidentes.revalidate();
+            tablaIncidentes.repaint();
+          } catch (JsonProcessingException e1) {
+            e1.printStackTrace();
+          }
+        }
+    });
+     
         frame.getContentPane().add(new JScrollPane(tabla));
         frame.getContentPane().validate();
         frame.getContentPane().repaint();
@@ -465,70 +451,131 @@ public class App {
 
 //    JScrollPane scrollPane = new JScrollPane(tablaParticipantes);
       tabla.addCell(scrollPane).fillX();
-  
+ 
     }
+   
+   public static void cargarCometidos() {
+     cometidosTodos = new CometidoDAO().getCometidosConIncidentes();
+     cometidosTodos.forEach(c -> {
+       c.getIncidentes().forEach(System.out::println);
+     });    
+     
+     cometidosTodos.stream()
+     .map(p -> {
+             String json = "N/D";
+             try {
+                 json = mapper.writeValueAsString(p);
+             } catch (JsonProcessingException e) {
+                 e.printStackTrace();
+             }
+             return json;
+         })
+     .forEach(System.err::println);
+   }
+   
+    
+   public static void cargarIncidencias() {
+     List<IncidenteCombate> incidentesCombate = 
+         new IncidenteCombateDAO().getIncidentesCombate();
+     List<IncidenteLogistico> incidentesLogistico = 
+         new IncidenteLogisticoDAO().getIncidenteLogisticos();
+     incidentesTodos.clear();
+     incidentesTodos.addAll(incidentesCombate);
+     incidentesTodos.addAll(incidentesLogistico);
+     incidentesTodos.sort(null);
+     incidentesTodos.stream()
+     .map(p -> {
+             String json = "N/D";
+             try {
+                 json = mapper.writeValueAsString(p);
+             } catch (JsonProcessingException e) {
+                 e.printStackTrace();
+             }
+             return json;
+         })
+     .forEach(System.out::println);
+   }
     
    public static void mostrarTablaCometidos() {
       
+      frame.getContentPane().removeAll();
+      frame.getContentPane().revalidate();
+      frame.getContentPane().repaint();
       Table tabla = new Table();
       JPanel panelFormulario = new JPanel();
       JPanel panelBotonesFormulario = new JPanel();
-      panelFormulario.add(new JLabel("Seleccione un incidente haciendo doble click sobre él para editarlo"));
+      panelFormulario.add(new JLabel("Seleccione un cometido haciendo doble click sobre él para editarlo"));
       tabla.addCell(panelFormulario).expandX();
       tabla.row();
       
-      ImageIcon iconoBorrar = Iconos.getIcono(Iconos.BORRAR, 14);
-      SimpleJTable<Incidente> tablaIncidentes =
-          new SimpleJTable<Incidente>(incidentesTodos,
-              new String[] { "Id", "Tipo", "Nombre", "Descripcion", "Bajas", "Material", "Cantidad", "Borrar" },
+      ImageIcon iconoAnadir = Iconos.getIcono(Iconos.NUEVO, 14);
+      
+      SimpleJTable<Cometido> tablaCometidos =
+          new SimpleJTable<Cometido>(cometidosTodos,
+              new String[] { "Id", "Nombre", "Descripcion", "Tiempo Estimado", "Añadir" },
               p -> p.getId().toString(),
-              p -> (p.getClass() == IncidenteCombate.class) ? "Combate" : "Logistica",
               p -> p.getNombre(),
               p -> p.getDescripcion(),
-              p -> ( p instanceof IncidenteCombate) ? 
-                   ((IncidenteCombate) p).getBajas() : "No aplica",
-              p -> ( p instanceof IncidenteLogistico) ? 
-                   ((IncidenteLogistico) p).getMaterial() : "No aplica",
-              p -> ( p instanceof IncidenteLogistico) ? 
-                   ((IncidenteLogistico) p).getCantidad() : "No aplica",
-              p -> iconoBorrar);
+              p -> p.getTiempoEstimado(),
+              p -> iconoAnadir);
       
-      tablaIncidentes.setAnchosPreferidos(ancho/16, 3*ancho/16, 2*ancho/16,3*ancho/16,ancho/16,3*ancho/16, ancho/16, 2*ancho/16);
+      tablaCometidos.setAnchosPreferidos(1*ancho/30, 10*ancho/30, 10*ancho/30, 1*ancho/30, 1*ancho/30);
       
       // Pongo un boton de accion en tabla
-      Action accion = new AbstractAction() {
+      Action accion2 = new AbstractAction() {
         
         @Override
         public void actionPerformed(ActionEvent e) {
-            SimpleJTable<Incidente> tabla = (SimpleJTable<Incidente>) e.getSource();
+//            SimpleJTable<Cometido> tabla = (SimpleJTable<Cometido>) e.getSource();
+//            Cometido cometido = tabla.getSeleccionado();
+//            IncidenteForm incidenteForm = new IncidenteForm(incidentesTodos);
+//            
+//            //PartidoForm partidoForm = new PartidoForm(participantes);
+//            int opcion = JOptionPane.showConfirmDialog(frame, incidenteForm, "Nuevo incidente",
+//                    JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+//            if (opcion == JOptionPane.OK_OPTION) {
+//                Incidente incidente = incidenteForm.leerPartido();
+//                System.out.println("Creado " + partido);
+//                cometido.getIncidentes().add(incidente);
+//                //partidos.add(partido);
+//                // si no esto no podria invocarse
+//                tablaCometidos.revalidate();
+//            }
+            
+            
+            
+            
+            
+            
+//          System.out.println("Borrar " + incidente);
             int opcionIncidenteCombate;
             int opcionIncidenteLogistico;
             //System.out.println("Borrar " + incidente);
             
-            if ( tabla.getSeleccionado().getClass() == IncidenteCombate.class ) {
-              IncidenteCombate incidente = (IncidenteCombate) tabla.getSeleccionado();
-              opcionIncidenteCombate = JOptionPane.
-                  showConfirmDialog(frame, new IncidenteCombateForm(incidente), "Borrar incidente",
-//                JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
-                  JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, Iconos.getIcono(Iconos.BORRAR, 30)); 
-              if (opcionIncidenteCombate == JOptionPane.OK_OPTION )
-              {
-                  System.out.println("Borrar " + incidente);
-                  incidentesTodos.remove(tablaIncidentes.getSeleccionado());
-                  tablaIncidentes.repaint();
-              }
-            } else {
-              IncidenteLogistico incidente = (IncidenteLogistico) tabla.getSeleccionado();
-              opcionIncidenteLogistico = JOptionPane.showConfirmDialog(frame, new IncidenteLogisticoForm(incidente), "Borrar partido",
-                //JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
-                  JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, Iconos.getIcono(Iconos.BORRAR, 30));
-              if (opcionIncidenteLogistico == JOptionPane.OK_OPTION)
-              {
-                  System.out.println("Borrar " + incidente);
-                  incidentesTodos.remove(tablaIncidentes.getSeleccionado());
-                  tablaIncidentes.repaint();
-              }
-            }
+//            if ( tabla.getSeleccionado().getClass() == IncidenteCombate.class ) {
+//              IncidenteCombate incidente = (IncidenteCombate) tabla.getSeleccionado();
+//              opcionIncidenteCombate = JOptionPane.
+//                  showConfirmDialog(frame, new IncidenteCombateForm(incidente), "Borrar incidente",
+////                JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+//                  JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, Iconos.getIcono(Iconos.BORRAR, 30)); 
+//              if (opcionIncidenteCombate == JOptionPane.OK_OPTION )
+//              {
+//                  System.out.println("Borrar " + incidente);
+//                  incidentesTodos.remove(tablaCometidos.getSeleccionado());
+//                  tablaCometidos.repaint();
+//              }
+//            } else {
+//              IncidenteLogistico incidente = (IncidenteLogistico) tabla.getSeleccionado();
+//              opcionIncidenteLogistico = JOptionPane.showConfirmDialog(frame, new IncidenteLogisticoForm(incidente), "Borrar partido",
+//                //JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+//                  JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, Iconos.getIcono(Iconos.BORRAR, 30));
+//              if (opcionIncidenteLogistico == JOptionPane.OK_OPTION)
+//              {
+//                  System.out.println("Borrar " + incidente);
+//                  incidentesTodos.remove(tablaCometidos.getSeleccionado());
+//                  tablaCometidos.repaint();
+//              }
+//            }
 
 //            if (opcionIncidenteCombate == JOptionPane.OK_OPTION || 
 //                opcionIncidenteLogistico == JOptionPane.OK_OPTION)
@@ -546,76 +593,64 @@ public class App {
 //        }
       }; 
       
-      new ButtonColumn(tablaIncidentes, accion, 7);
-      tablaIncidentes.setColumnasEditables(7);
+      new ButtonColumn(tablaCometidos, accion2, 4);
+      tablaCometidos.setColumnasEditables(4);
       
       DefaultTableCellRenderer leftRenderer = new DefaultTableCellRenderer();
       DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
       leftRenderer.setHorizontalAlignment(JLabel.LEFT);
       centerRenderer.setHorizontalAlignment(JLabel.RIGHT);
       
-      TableColumn columnaId = tablaIncidentes.getColumn("Id");
-      columnaId.setMaxWidth(30);
+      TableColumn columnaId = tablaCometidos.getColumn("Id");
+      columnaId.setMaxWidth(50);
       columnaId.setCellRenderer(centerRenderer);
       
-      TableColumn columnaTipo = tablaIncidentes.getColumn("Tipo");
-      columnaTipo.setMaxWidth(100);
-      columnaTipo.setCellRenderer(leftRenderer);
-      
-      TableColumn columnaNombre = tablaIncidentes.getColumn("Nombre");
+      TableColumn columnaNombre = tablaCometidos.getColumn("Nombre");
       columnaNombre.setMaxWidth(250);
       columnaNombre.setCellRenderer(leftRenderer);
       
-      TableColumn columnaDescripcion = tablaIncidentes.getColumn("Descripcion");
+      TableColumn columnaDescripcion = tablaCometidos.getColumn("Descripcion");
       columnaDescripcion.setMaxWidth(800);
       columnaDescripcion.setCellRenderer(leftRenderer);
       
-      TableColumn columnaBajas = tablaIncidentes.getColumn("Bajas");
-      columnaBajas.setMaxWidth(100);
+      TableColumn columnaBajas = tablaCometidos.getColumn("Tiempo Estimado");
+      columnaBajas.setMaxWidth(150);
       columnaBajas.setCellRenderer(leftRenderer);
       
-      TableColumn columnaMaterial = tablaIncidentes.getColumn("Material");
-      columnaMaterial.setMaxWidth(300);
-      columnaMaterial.setCellRenderer(leftRenderer);
-      
-      TableColumn columnaCantidad = tablaIncidentes.getColumn("Cantidad");
-      columnaCantidad.setMaxWidth(100);
-      columnaCantidad.setCellRenderer(leftRenderer);
-      
-      TableColumn columnaBorrar = tablaIncidentes.getColumn("Borrar");
+      TableColumn columnaBorrar = tablaCometidos.getColumn("Añadir");
       columnaBorrar.setMaxWidth(50);
       //columnaBorrar.setCellRenderer(leftRenderer);
       
-      tablaIncidentes.addMouseListener(
+      tablaCometidos.addMouseListener(
           new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
             if (e.getClickCount() > 1) {
-                Incidente incidente;
-                incidente = tablaIncidentes.getSeleccionado();
+                Cometido cometido;
+                cometido = tablaCometidos.getSeleccionado();
                 panelFormulario.removeAll();
                 panelBotonesFormulario.removeAll();
                 panelFormulario.setLayout((LayoutManager) new BoxLayout(panelFormulario, BoxLayout.Y_AXIS));
-                
-                if ( tablaIncidentes.getSeleccionado().getClass() == IncidenteCombate.class ) {
-                incidente = (IncidenteCombate) tablaIncidentes.getSeleccionado();
-                try {
-                  System.out.println("Este es el incidente a editar: \n" + mapper.writeValueAsString(incidente) );
-                  panelFormulario.add(new IncidenteCombateForm((IncidenteCombate)incidente, true)); 
-                
-                } catch (JsonProcessingException e1) {
-                  e1.printStackTrace();
-                }
-                }
-                else
-                {
-                incidente = (IncidenteLogistico) tablaIncidentes.getSeleccionado();
-                try {      
-                  System.out.println("Este es el incidente a editar: \n" + mapper.writeValueAsString(incidente) );
-                  panelFormulario.add(new IncidenteLogisticoForm((IncidenteLogistico)incidente, true));
-                } catch (JsonProcessingException e1) {
-                  e1.printStackTrace();
-                }                             
-                }
+                mostrarDialogoConTabla((List<Incidente>) cometido.getIncidentes());
+//                if ( tablaCometidos.getSeleccionado().getClass() == IncidenteCombate.class ) {
+//                incidente = (IncidenteCombate) tablaCometidos.getSeleccionado();
+//                try {
+//                  System.out.println("Este es el incidente a editar: \n" + mapper.writeValueAsString(incidente) );
+//                  panelFormulario.add(new IncidenteCombateForm((IncidenteCombate)incidente, true)); 
+//                
+//                } catch (JsonProcessingException e1) {
+//                  e1.printStackTrace();
+//                }
+//                }
+//                else
+//                {
+//                //incidente = (IncidenteLogistico) tablaCometidos.getSeleccionado();
+//                try {      
+//                  System.out.println("Este es el incidente a editar: \n" + mapper.writeValueAsString(incidente) );
+//                  panelFormulario.add(new IncidenteLogisticoForm((IncidenteLogistico)incidente, true));
+//                } catch (JsonProcessingException e1) {
+//                  e1.printStackTrace();
+//                }                             
+//                }
       
                 JButton btnRefrescar = new JButton("Refrescar");
                 //panelFormulario.add(btnRefrescar);
@@ -627,22 +662,22 @@ public class App {
 
                 @Override
                 public void actionPerformed(ActionEvent e) { 
-                    try {
-                      if ( tablaIncidentes.getSeleccionado().getClass() == IncidenteLogistico.class) {
-                        IncidenteLogistico incidente = (IncidenteLogistico) tablaIncidentes.getSeleccionado();
-                        new IncidenteLogisticoDAO().patchIncidenteLogistico(incidente);
-                        System.out.println("El nombre actual del incidente es: \n" +
-                        mapper.writeValueAsString((IncidenteLogistico) incidente));
-                      } else {
-                        IncidenteCombate incidente = (IncidenteCombate) tablaIncidentes.getSeleccionado();
-                        new IncidenteCombateDAO().patchIncidenteCombate((IncidenteCombate)incidente);
-                        System.out.println("El nombre actual del incidente es: \n" +
-                        mapper.writeValueAsString((IncidenteCombate) incidente));
-                      }
-                   } catch (JsonProcessingException e1) {
-                      e1.printStackTrace();
-                    }
-                    tablaIncidentes.repaint();
+//                    try {
+//                      if ( tablaIncidentes.getSeleccionado().getClass() == IncidenteLogistico.class) {
+//                        IncidenteLogistico incidente = (IncidenteLogistico) tablaIncidentes.getSeleccionado();
+//                        new IncidenteLogisticoDAO().patchIncidenteLogistico(incidente);
+//                        System.out.println("El nombre actual del incidente es: \n" +
+//                        mapper.writeValueAsString((IncidenteLogistico) incidente));
+//                      } else {
+//                        IncidenteCombate incidente = (IncidenteCombate) tablaIncidentes.getSeleccionado();
+//                        new IncidenteCombateDAO().patchIncidenteCombate((IncidenteCombate)incidente);
+//                        System.out.println("El nombre actual del incidente es: \n" +
+//                        mapper.writeValueAsString((IncidenteCombate) incidente));
+//                      }
+//                   } catch (JsonProcessingException e1) {
+//                      e1.printStackTrace();
+//                    }
+                    tablaCometidos.repaint();
                     panelFormulario.removeAll();
                     panelFormulario.revalidate();
                     panelBotonesFormulario.removeAll();
@@ -663,7 +698,7 @@ public class App {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     System.out.println("Cerramos pantalla");
-                    tablaIncidentes.repaint();
+                    tablaCometidos.repaint();
                     panelFormulario.removeAll();
                     panelFormulario.revalidate();
                     panelBotonesFormulario.removeAll();
@@ -682,7 +717,7 @@ public class App {
           if (e.getClickCount() > 1) {
               panelFormulario.removeAll();
               panelFormulario.setLayout((LayoutManager) new BoxLayout(panelFormulario, BoxLayout.Y_AXIS));
-              tablaIncidentes.repaint();
+              tablaCometidos.repaint();
               panelFormulario.revalidate();
               panelFormulario.add(new JLabel("Seleccione un incidente haciendo doble click sobre él"));
           }
@@ -713,14 +748,46 @@ public class App {
 //          new CondicionalCustomRenderer<Incidente>
 //      (p -> p.toString(), false, Color.decode("#b9ea96"), 
 //          null, null, null));
-
+        
+        
         frame.getContentPane().add(new JScrollPane(tabla));
         frame.getContentPane().validate();
         frame.getContentPane().repaint();
-        JScrollPane scrollPane = new JScrollPane(tablaIncidentes);
+        JScrollPane scrollPane = new JScrollPane(tablaCometidos);
 
 //    JScrollPane scrollPane = new JScrollPane(tablaParticipantes);
       tabla.addCell(scrollPane).fillX();
     
 }
+   public static void mostrarDialogoConTabla(List<Incidente> incidentes) {
+     int ancho = PROPIEDADES.leerPropiedadInt("ancho");
+     int alto = PROPIEDADES.leerPropiedadInt("alto");
+     JDialog dialogo = new JDialog(frame, "Tabla de Incidentes", true);
+     
+     SimpleJTable<Incidente> tablaIncidentesCometido =
+         new SimpleJTable<Incidente>(incidentes,
+             new String[] { "Id", "Tipo", "Nombre", "Descripcion", "Bajas", "Material", "Cantidad", "Borrar" },
+             p -> p.getId().toString(),
+             p -> (p.getClass() == IncidenteCombate.class) ? "Combate" : "Logistica",
+             p -> p.getNombre(),
+             p -> p.getDescripcion(),
+             p -> ( p instanceof IncidenteCombate) ? 
+                  ((IncidenteCombate) p).getBajas() : "No aplica",
+             p -> ( p instanceof IncidenteLogistico) ? 
+                  ((IncidenteLogistico) p).getMaterial() : "No aplica",
+             p -> ( p instanceof IncidenteLogistico) ? 
+                  ((IncidenteLogistico) p).getCantidad() : "No aplica");
+     
+     JScrollPane scrollPane = new JScrollPane(tablaIncidentesCometido);
+
+     dialogo.getContentPane().removeAll();
+     dialogo.getContentPane().validate();
+     dialogo.getContentPane().repaint();
+
+     dialogo.add(scrollPane);
+     dialogo.setSize(ancho, alto);
+     dialogo.setLocationRelativeTo(frame);
+     dialogo.setVisible(true);
+     
+ }
 }
