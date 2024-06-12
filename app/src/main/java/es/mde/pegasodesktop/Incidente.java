@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 import java.util.Collection;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonValue;
 /**
  * Representa un Incidente
  * 
@@ -18,8 +19,13 @@ public class Incidente implements Comparable<Incidente> {
   private String nombre;
   private String descripcion;
 
-  //private Collection<Cometido> cometidos = new ArrayList<>();
-    
+  private Collection<Cometido> cometidos = new ArrayList<>();
+  
+  @JsonValue
+  public String urlIncidente() {
+    return "https://pegaso-7053cf70389a.herokuapp.com/api/incidentes/" + this.getId();
+  }
+  
   public Long getId() {
     return id;
   }

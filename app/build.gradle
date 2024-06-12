@@ -14,12 +14,16 @@ java {
 
 repositories {
     jcenter()
-
     maven { url 'https://jitpack.io' }
 }
 
-application {
-    mainClassName = 'pegaso.desktop.App'
+
+jar {
+	manifest {
+		attributes(
+			'Main-class': 'es.mde.pegasodesktop.App'
+			)
+	}
 }
     
 dependencies {

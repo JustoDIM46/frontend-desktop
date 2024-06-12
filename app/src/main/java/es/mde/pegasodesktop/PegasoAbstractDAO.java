@@ -116,14 +116,13 @@ public class PegasoAbstractDAO<T> {
 	            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 	        
 	        String json = objectMapper.writeValueAsString(entidad);
-
 	        // Crear conexión HTTP
 	        URL url = new URL(getApiUrl() + path);
 	        System.err.println(getApiUrl() + path);
 	        System.err.println(json);
 	        con = (HttpURLConnection) url.openConnection();
 	        con.setRequestMethod("PUT");
-	        //con.setRequestProperty("X-HTTP-Method-Override", "PATCH");
+
 	        con.setDoOutput(true);
 	        con.setRequestProperty("Content-Type", "application/json; charset=utf-8");
 

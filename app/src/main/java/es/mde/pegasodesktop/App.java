@@ -2,6 +2,7 @@ package es.mde.pegasodesktop;
 
 import java.awt.Color;
 
+
 import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -40,7 +41,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import es.lanyu.commons.config.Propiedades;
 import es.lanyu.commons.reflect.ReflectUtils;
-import es.lanyu.comun.evento.Partido;
 import es.lanyu.ui.iconos.Iconos;
 import es.lanyu.ui.swing.ButtonColumn;
 import es.lanyu.ui.swing.SimpleJTable;
@@ -451,7 +451,6 @@ public class App {
 
 //    JScrollPane scrollPane = new JScrollPane(tablaParticipantes);
       tabla.addCell(scrollPane).fillX();
- 
     }
    
    public static void cargarCometidos() {
@@ -472,7 +471,6 @@ public class App {
          })
      .forEach(System.err::println);
    }
-   
     
    public static void cargarIncidencias() {
      List<IncidenteCombate> incidentesCombate = 
@@ -526,73 +524,24 @@ public class App {
         
         @Override
         public void actionPerformed(ActionEvent e) {
-//            SimpleJTable<Cometido> tabla = (SimpleJTable<Cometido>) e.getSource();
-//            Cometido cometido = tabla.getSeleccionado();
-//            IncidenteForm incidenteForm = new IncidenteForm(incidentesTodos);
-//            
-//            //PartidoForm partidoForm = new PartidoForm(participantes);
-//            int opcion = JOptionPane.showConfirmDialog(frame, incidenteForm, "Nuevo incidente",
-//                    JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-//            if (opcion == JOptionPane.OK_OPTION) {
-//                Incidente incidente = incidenteForm.leerPartido();
-//                System.out.println("Creado " + partido);
-//                cometido.getIncidentes().add(incidente);
-//                //partidos.add(partido);
-//                // si no esto no podria invocarse
-//                tablaCometidos.revalidate();
-//            }
-            
-            
-            
-            
-            
-            
-//          System.out.println("Borrar " + incidente);
-            int opcionIncidenteCombate;
-            int opcionIncidenteLogistico;
-            //System.out.println("Borrar " + incidente);
-            
-//            if ( tabla.getSeleccionado().getClass() == IncidenteCombate.class ) {
-//              IncidenteCombate incidente = (IncidenteCombate) tabla.getSeleccionado();
-//              opcionIncidenteCombate = JOptionPane.
-//                  showConfirmDialog(frame, new IncidenteCombateForm(incidente), "Borrar incidente",
-////                JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
-//                  JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, Iconos.getIcono(Iconos.BORRAR, 30)); 
-//              if (opcionIncidenteCombate == JOptionPane.OK_OPTION )
-//              {
-//                  System.out.println("Borrar " + incidente);
-//                  incidentesTodos.remove(tablaCometidos.getSeleccionado());
-//                  tablaCometidos.repaint();
-//              }
-//            } else {
-//              IncidenteLogistico incidente = (IncidenteLogistico) tabla.getSeleccionado();
-//              opcionIncidenteLogistico = JOptionPane.showConfirmDialog(frame, new IncidenteLogisticoForm(incidente), "Borrar partido",
-//                //JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
-//                  JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, Iconos.getIcono(Iconos.BORRAR, 30));
-//              if (opcionIncidenteLogistico == JOptionPane.OK_OPTION)
-//              {
-//                  System.out.println("Borrar " + incidente);
-//                  incidentesTodos.remove(tablaCometidos.getSeleccionado());
-//                  tablaCometidos.repaint();
-//              }
-//            }
-
-//            if (opcionIncidenteCombate == JOptionPane.OK_OPTION || 
-//                opcionIncidenteLogistico == JOptionPane.OK_OPTION)
-//            {
-//                System.out.println("Borrar " + incidente);
-//                incidentesTodos.remove(tablaIncidentes.getSeleccionado());
-//                tablaIncidentes.repaint();
-//            }
+          SimpleJTable<Cometido> tabla = (SimpleJTable<Cometido>) e.getSource();
+          Cometido cometidoSeleccionado = tabla.getSeleccionado();
+          IncidenteForm incidenteForm = new IncidenteForm(incidentesTodos);
+          int opcion = JOptionPane.showConfirmDialog(frame, incidenteForm, "Nuevo incidente",
+                  JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+          if (opcion == JOptionPane.OK_OPTION) {
+              Incidente incidente = incidenteForm.leerIncidente();
+              System.out.println("Creado " + incidente.getDescripcion() + "con id: " + incidente.getId());
+              cometidoSeleccionado.getIncidentes().add(incidente);
+              cometidoSeleccionado.getIncidentes().forEach(System.out::println);
+              new CometidoDAO().patchCometido(cometidoSeleccionado);
+              cargarCometidos();
+              tablaCometidos.revalidate();
+              tablaCometidos.repaint();
           }
-//        @Override
-//        public void actionPerformed(ActionEvent e) {
-//          SimpleJTable<Incidente> tabla = (SimpleJTable<Incidente>)e.getSource();
-//          Incidente incidente = tabla.getSeleccionado();
-//          System.out.println("Borrar " + incidente);
-//        }
-      }; 
-      
+      }
+      };
+          
       new ButtonColumn(tablaCometidos, accion2, 4);
       tablaCometidos.setColumnasEditables(4);
       
@@ -631,26 +580,6 @@ public class App {
                 panelBotonesFormulario.removeAll();
                 panelFormulario.setLayout((LayoutManager) new BoxLayout(panelFormulario, BoxLayout.Y_AXIS));
                 mostrarDialogoConTabla((List<Incidente>) cometido.getIncidentes());
-//                if ( tablaCometidos.getSeleccionado().getClass() == IncidenteCombate.class ) {
-//                incidente = (IncidenteCombate) tablaCometidos.getSeleccionado();
-//                try {
-//                  System.out.println("Este es el incidente a editar: \n" + mapper.writeValueAsString(incidente) );
-//                  panelFormulario.add(new IncidenteCombateForm((IncidenteCombate)incidente, true)); 
-//                
-//                } catch (JsonProcessingException e1) {
-//                  e1.printStackTrace();
-//                }
-//                }
-//                else
-//                {
-//                //incidente = (IncidenteLogistico) tablaCometidos.getSeleccionado();
-//                try {      
-//                  System.out.println("Este es el incidente a editar: \n" + mapper.writeValueAsString(incidente) );
-//                  panelFormulario.add(new IncidenteLogisticoForm((IncidenteLogistico)incidente, true));
-//                } catch (JsonProcessingException e1) {
-//                  e1.printStackTrace();
-//                }                             
-//                }
       
                 JButton btnRefrescar = new JButton("Refrescar");
                 //panelFormulario.add(btnRefrescar);
@@ -662,21 +591,6 @@ public class App {
 
                 @Override
                 public void actionPerformed(ActionEvent e) { 
-//                    try {
-//                      if ( tablaIncidentes.getSeleccionado().getClass() == IncidenteLogistico.class) {
-//                        IncidenteLogistico incidente = (IncidenteLogistico) tablaIncidentes.getSeleccionado();
-//                        new IncidenteLogisticoDAO().patchIncidenteLogistico(incidente);
-//                        System.out.println("El nombre actual del incidente es: \n" +
-//                        mapper.writeValueAsString((IncidenteLogistico) incidente));
-//                      } else {
-//                        IncidenteCombate incidente = (IncidenteCombate) tablaIncidentes.getSeleccionado();
-//                        new IncidenteCombateDAO().patchIncidenteCombate((IncidenteCombate)incidente);
-//                        System.out.println("El nombre actual del incidente es: \n" +
-//                        mapper.writeValueAsString((IncidenteCombate) incidente));
-//                      }
-//                   } catch (JsonProcessingException e1) {
-//                      e1.printStackTrace();
-//                    }
                     tablaCometidos.repaint();
                     panelFormulario.removeAll();
                     panelFormulario.revalidate();
@@ -723,39 +637,12 @@ public class App {
           }
        }
     });
-      
-//      DefaultTableCellRenderer dtcr = new DefaultTableCellRenderer();
-//      dtcr.setHorizontalAlignment(JLabel.LEFT);
-//      columnaNombre.setCellRenderer(dtcr);
-      
-        //tablaIncidentes.setAnchosPreferidos(300, 800);
-
-//      int anchoNombre = 200;
-//      tablaIncidentes.setAnchosPreferidos(anchoNombre, 600);
-//      TableColumn columnaTipo = tablaIncidentes.getColumn("Tipo");
-//      columnaTipo.setMaxWidth(30);
-//      TableColumn columnaNombre = tablaIncidentes.getColumn("Nombre");
-//      columnaNombre.setMaxWidth(anchoNombre);
-//      TableColumn columnaDescripcion = tablaIncidentes.getColumn("Descripcion");
-//      columnaDescripcion.setMaxWidth(300);
-//      DefaultTableCellRenderer dtcr = new DefaultTableCellRenderer();
-//      dtcr.setHorizontalAlignment(JLabel.LEFT);
-//      columnaNombre.setCellRenderer(dtcr);
-
-//      tablaIncidentes.getColumnModel().
-//      getColumn(3).
-//      setCellRenderer(
-//          new CondicionalCustomRenderer<Incidente>
-//      (p -> p.toString(), false, Color.decode("#b9ea96"), 
-//          null, null, null));
-        
-        
+           
         frame.getContentPane().add(new JScrollPane(tabla));
         frame.getContentPane().validate();
         frame.getContentPane().repaint();
         JScrollPane scrollPane = new JScrollPane(tablaCometidos);
 
-//    JScrollPane scrollPane = new JScrollPane(tablaParticipantes);
       tabla.addCell(scrollPane).fillX();
     
 }
@@ -766,7 +653,7 @@ public class App {
      
      SimpleJTable<Incidente> tablaIncidentesCometido =
          new SimpleJTable<Incidente>(incidentes,
-             new String[] { "Id", "Tipo", "Nombre", "Descripcion", "Bajas", "Material", "Cantidad", "Borrar" },
+             new String[] { "Id", "Tipo", "Nombre", "Descripcion", "Bajas", "Material", "Cantidad" },
              p -> p.getId().toString(),
              p -> (p.getClass() == IncidenteCombate.class) ? "Combate" : "Logistica",
              p -> p.getNombre(),

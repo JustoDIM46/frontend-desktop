@@ -12,10 +12,6 @@ import es.lanyu.commons.reflect.ReflectUtils;
 
 public class CometidoDAO extends PegasoAbstractDAO<Cometido> {
   
-//  Field fieldId = ReflectUtils.getCampo(IncidenteCombate.class, "id", true);
-//  Field fieldDescripcion = ReflectUtils.getCampo(IncidenteCombate.class, "descripcion", true);
-//  Field fieldNombre = ReflectUtils.getCampo(IncidenteCombate.class, "nombre", true);
-  
   private IncidenteCombateDAO incidenteCombateDAO;
   private IncidenteLogisticoDAO incidenteLogisticoDAO;
   
@@ -43,24 +39,9 @@ public class CometidoDAO extends PegasoAbstractDAO<Cometido> {
     return cometidosConIncidentes;
   }
   
-  
-//  @Override
-//  public void completarMapeo(IncidenteCombate entidad, JsonNode nodo, Long id) {
-//    super.completarMapeo(entidad, nodo, id);
-//    try {
-//      fieldDescripcion.set(entidad, nodo.findValue("descripcion").asText());
-//      //System.err.println(nodo.findValue("descripcion").asText());
-//      fieldNombre.set(entidad, nodo.findValue("nombre").asText());
-//      //System.err.println(nodo.findValue("nombre").asText());
-//      fieldId.set(entidad, id);
-//      //System.err.println("Id: " + id);
-//    } catch (IllegalArgumentException | IllegalAccessException e) {
-//      e.printStackTrace();
-//    }
-//  }
-  
-//  public void patchIncidenteCombate(IncidenteCombate entidad) {
-//    super.patchEntidad(entidad, "incidentescombate/" + entidad.getId());
-//  }
+  public void patchCometido(Cometido entidad) {
+    System.err.println("patch: " + "cometidos/" + entidad.getId());
+    super.patchEntidad(entidad, "cometidos/" + entidad.getId());
+  }
   
 }
