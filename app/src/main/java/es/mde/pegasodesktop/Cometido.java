@@ -2,6 +2,7 @@ package es.mde.pegasodesktop;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 
 /**
@@ -12,6 +13,7 @@ import java.util.Collection;
 
 public class Cometido  {
 
+  @JsonIgnore
   private Long id;
   private String nombre;
   private String descripcion;
