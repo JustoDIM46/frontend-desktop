@@ -58,7 +58,6 @@ public class App {
 
   static {
     PROPIEDADES = new Propiedades("app.properties");
-    //tabla = new Table();
     frame = new JFrame("Listado de Incidentes y Cometidos");
     mapper = new ObjectMapper()
         .enable(SerializationFeature.INDENT_OUTPUT)
@@ -74,29 +73,12 @@ public class App {
     PROPIEDADES.guardarPropiedades();
   }
   
-//  private static void cambiarTabla(int numeroTabla) {
-//    frame.getContentPane().removeAll();
-//    if (numeroTabla == 1 ) {
-//      frame.getContentPane().add(new JScrollPane(tabla));
-//    } else {
-//      frame.getContentPane().add(new JScrollPane(tabla));
-//    }
-//    frame.getContentPane().validate();
-//    frame.getContentPane().repaint();
-//}
     public static void main(String[] args) throws IOException {
-      
-//      ObjectMapper mapper = new ObjectMapper()
-//          .enable(SerializationFeature.INDENT_OUTPUT)
-//          .enable(Feature.ALLOW_UNQUOTED_FIELD_NAMES)
-//          .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-//          .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
       int ancho = PROPIEDADES.leerPropiedadInt("ancho");
       int alto = PROPIEDADES.leerPropiedadInt("alto");
        
       frame.setLocation(0, 0);
-//      frame.setLocationRelativeTo(null);
       frame.addWindowListener(new WindowAdapter() {
         @Override
         public void windowClosing(WindowEvent e) {
@@ -130,12 +112,8 @@ public class App {
       cargarIncidencias();
       //Cargamos cometidos
       cargarCometidos();
-          
-      //tabla.debug();
-
       frame.setSize(ancho, alto);
       frame.setVisible(true);
-      
     }
     
     public static void mostrarTablaIncidentes() {
@@ -151,11 +129,9 @@ public class App {
       tabla.addCell(new JLabel("Pulse para anadir nuevo incidente"));
       tabla.row();
       tabla.row();
-//      panelBotonesAnadir.add(new JLabel("Pulse para anadir incidente"));
       panelBotonesAnadir.setLayout((LayoutManager) new BoxLayout(panelBotonesAnadir, BoxLayout.X_AXIS));
       
       // Cargar las imágenes como iconos
-      
 //      ImageIcon iconoCombate = 
 //          new ImageIcon(ClassLoader.getSystemResource("/combate.png"));  // Ruta relativa a la carpeta resources
 //      ImageIcon iconoLogistico = 
@@ -224,7 +200,6 @@ public class App {
               IncidenteCombate incidente = (IncidenteCombate) tabla.getSeleccionado();
               opcionIncidenteCombate = JOptionPane.
                   showConfirmDialog(frame, new IncidenteCombateForm(incidente), "Borrar incidente",
-//                JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
                   JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, Iconos.getIcono(Iconos.BORRAR, 30)); 
               if (opcionIncidenteCombate == JOptionPane.OK_OPTION )
               {
@@ -235,7 +210,6 @@ public class App {
             } else {
               IncidenteLogistico incidente = (IncidenteLogistico) tabla.getSeleccionado();
               opcionIncidenteLogistico = JOptionPane.showConfirmDialog(frame, new IncidenteLogisticoForm(incidente), "Borrar partido",
-                //JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
                   JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, Iconos.getIcono(Iconos.BORRAR, 30));
               if (opcionIncidenteLogistico == JOptionPane.OK_OPTION)
               {
@@ -244,21 +218,7 @@ public class App {
                   tablaIncidentes.repaint();
               }
             }
-
-//            if (opcionIncidenteCombate == JOptionPane.OK_OPTION || 
-//                opcionIncidenteLogistico == JOptionPane.OK_OPTION)
-//            {
-//                System.out.println("Borrar " + incidente);
-//                incidentesTodos.remove(tablaIncidentes.getSeleccionado());
-//                tablaIncidentes.repaint();
-//            }
           }
-//        @Override
-//        public void actionPerformed(ActionEvent e) {
-//          SimpleJTable<Incidente> tabla = (SimpleJTable<Incidente>)e.getSource();
-//          Incidente incidente = tabla.getSeleccionado();
-//          System.out.println("Borrar " + incidente);
-//        }
       }; 
       
       new ButtonColumn(tablaIncidentes, accion, 7);
@@ -368,7 +328,6 @@ public class App {
                   });           
                 panelBotonesFormulario.setLayout((LayoutManager) new BoxLayout(panelBotonesFormulario, BoxLayout.X_AXIS));
                 JButton btnCerrar = new JButton("Cerrar");
-                //panelFormulario.add(btnCerrar);
                 panelBotonesFormulario.add(btnCerrar);
                 panelBotonesFormulario.revalidate();
                 panelFormulario.revalidate();             
@@ -448,9 +407,7 @@ public class App {
         frame.getContentPane().validate();
         frame.getContentPane().repaint();
         JScrollPane scrollPane = new JScrollPane(tablaIncidentes);
-
-//    JScrollPane scrollPane = new JScrollPane(tablaParticipantes);
-      tabla.addCell(scrollPane).fillX();
+        tabla.addCell(scrollPane).fillX();
     }
    
    public static void cargarCometidos() {
@@ -568,7 +525,6 @@ public class App {
       
       TableColumn columnaBorrar = tablaCometidos.getColumn("Añadir");
       columnaBorrar.setMaxWidth(50);
-      //columnaBorrar.setCellRenderer(leftRenderer);
       
       tablaCometidos.addMouseListener(
           new MouseAdapter() {
@@ -602,7 +558,6 @@ public class App {
                   });           
                 panelBotonesFormulario.setLayout((LayoutManager) new BoxLayout(panelBotonesFormulario, BoxLayout.X_AXIS));
                 JButton btnCerrar = new JButton("Cerrar");
-                //panelFormulario.add(btnCerrar);
                 panelBotonesFormulario.add(btnCerrar);
                 panelBotonesFormulario.revalidate();
                 panelFormulario.revalidate();             
@@ -624,8 +579,8 @@ public class App {
          }
         }
         });
-      //Cerramos si pulsamos doble click sobre el formulario
       
+      //Cerramos si pulsamos doble click sobre el formulario 
       panelFormulario.addMouseListener(new MouseAdapter() {
         public void mouseClicked(MouseEvent e) {
           if (e.getClickCount() > 1) {
@@ -642,8 +597,7 @@ public class App {
         frame.getContentPane().validate();
         frame.getContentPane().repaint();
         JScrollPane scrollPane = new JScrollPane(tablaCometidos);
-
-      tabla.addCell(scrollPane).fillX();
+        tabla.addCell(scrollPane).fillX();
     
 }
    public static void mostrarDialogoConTabla(List<Incidente> incidentes) {
@@ -670,7 +624,6 @@ public class App {
      dialogo.getContentPane().removeAll();
      dialogo.getContentPane().validate();
      dialogo.getContentPane().repaint();
-
      dialogo.add(scrollPane);
      dialogo.setSize(ancho, alto);
      dialogo.setLocationRelativeTo(frame);

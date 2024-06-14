@@ -49,14 +49,6 @@ public class Incidente implements Comparable<Incidente> {
   public void setDescripcion(String descripcion) {
     this.descripcion = descripcion;
   }
-  
-//public Collection<Cometido> getCometidos() {
-//    return cometidos;
-//  }
-//
-//  public void setCometidos(Collection<Cometido> cometidos) {
-//    this.cometidos = cometidos;
-//  }
  
   public Incidente() {
     super();

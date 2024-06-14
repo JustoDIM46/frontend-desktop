@@ -14,21 +14,12 @@ import es.lanyu.participante.Participante;
 
 public class IncidenteForm extends Table {
   
-    //private JComboBox<Incidente> incidente;
-    //private Partido partido;
     private JComboBox<Incidente> cIncidente;
-    //private DateTimePicker dtpFechaPartido;
     
     public IncidenteForm(Collection<Incidente> incidentes) {
       JLabel lblCabecera = new JLabel("Incidente a añadir");
-      //lblResultado.setSize(20, 0);
-      //dtpFechaPartido = new DateTimePicker();
-      //dtpFechaPartido.setDateTimePermissive(LocalDateTime.now());
       cIncidente = cargarIncidente(incidentes, false);
-      //cbLocal = cargarParticipante(participantes, false);
       cIncidente.setSelectedIndex((int) MathUtils.generarFloatRandom(0, incidentes.size()));
-      //cbVisitante = cargarParticipante(participantes, false);
-      //cbVisitante.setSelectedIndex((int) MathUtils.generarFloatRandom(0, incidentes.size()));
       montarComponentes(lblCabecera, cIncidente);
   }
 

@@ -32,7 +32,6 @@ public class PegasoAbstractDAO<T> {
     Field fieldNombre;
 
 	private String getApiUrl() {
-//		return "https://pruebas-acing-43227cb1dc53.herokuapp.com/api/";
 		return App.PROPIEDADES.getProperty("url-api");
 	}
 
@@ -49,8 +48,6 @@ public class PegasoAbstractDAO<T> {
 		System.err.println(tipo);
 		mapper = new ObjectMapper();
 		getMapper().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-		//getMapper().addMixIn(Participante.class, MixIns.Participantes.class);
-		//getMapper().addMixIn(Incidente.class, MixIns.Participantes.class);
 	}
 
 	public List<T> getEntidades(Class<T> tipo, String path, Map<String, String> parametros) {
@@ -73,12 +70,6 @@ public class PegasoAbstractDAO<T> {
 			String campo = campoRoot[campoRoot.length-1];
 	        JsonNode rootNode = mapper.readTree(buffer);
 	        JsonNode nodoElementos = rootNode.findValue(campo);
-			//JsonNode nodoElementos = getMapper().readTree(buffer).findValue(path);
-//			for (JsonNode nodo : nodoElementos) {
-//				T entidad = getMapper().readValue(nodo.traverse(), tipo);
-//				completarMapeo(entidad, nodo);
-//				elementos.add(entidad);
-//			}
 			
 		    if (nodoElementos != null && nodoElementos.isArray()) {
 		        for (JsonNode nodo : nodoElementos) {
@@ -208,7 +199,7 @@ public class PegasoAbstractDAO<T> {
 	            }
 
 	            // Leer respuesta
-	            int status = con.getResponseCode();  // Obtener el código de respuesta
+	            int status = con.getResponseCode();
 	            if (status == HttpURLConnection.HTTP_OK || status == HttpURLConnection.HTTP_NO_CONTENT
 	                || status == HttpURLConnection.HTTP_CREATED) {
 	                try (BufferedReader br = new BufferedReader(
@@ -241,7 +232,6 @@ public class PegasoAbstractDAO<T> {
 	                    String formattedJson = objectMapper.writeValueAsString(json2);
 	                    
 	                    // Imprimir el JSON formateado
-	                    //System.out.println(formattedJson);
 	                    System.out.println("Error response del servidor: " + formattedJson);
 	                }
 	            }
@@ -255,20 +245,14 @@ public class PegasoAbstractDAO<T> {
 	        }
 	    }
 	  public void completarMapeo(T entidad, JsonNode nodo, Long id) {
-	    //super.completarMapeo(entidad, nodo, id);
 	    try {
 	      fieldDescripcion.set(entidad, nodo.findValue("descripcion").asText());
-	      //System.err.println(nodo.findValue("descripcion").asText());
 	      fieldNombre.set(entidad, nodo.findValue("nombre").asText());
-	      //System.err.println(nodo.findValue("nombre").asText());
 	      fieldId.set(entidad, id);
-	      //System.err.println("Id: " + id);
 	    } catch (IllegalArgumentException | IllegalAccessException e) {
 	      e.printStackTrace();
 	    }
 	  }
-//	public void completarMapeo(T entidad, JsonNode nodo, Long id) {
-//	};
 
 	public static String getParamsString(Map<String, String> params) throws UnsupportedEncodingException {
 		StringBuilder result = new StringBuilder();

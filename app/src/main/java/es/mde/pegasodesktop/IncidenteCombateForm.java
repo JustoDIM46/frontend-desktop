@@ -60,7 +60,6 @@ public class IncidenteCombateForm extends JPanel {
 
   public IncidenteCombateForm(IncidenteCombate incidenteCombate, boolean editable) {
       Table tabla = new Table();
-      //tabla.debug();
       txtNombre = new JTextField();
       txtDescripcion = new JTextField();
       txtBajas = new JTextField();
